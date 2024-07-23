@@ -1,1 +1,1 @@
-const a = 5;
+export const DB_NAME = "TrueFeedback";
