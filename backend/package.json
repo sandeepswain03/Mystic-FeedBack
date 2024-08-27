@@ -1,14 +1,14 @@
 {
   "name": "backend",
   "version": "1.0.0",
-  "description": "backend-truefeedback application",
+  "description": "backend-mysticfeedback application",
   "type": "module",
   "main": "index.js",
   "scripts": {
     "dev": "nodemon src/index.js"
   },
   "keywords": [],
-  "author": "sandeep swain and Tirth Ratanpara",
+  "author": "",
   "license": "ISC",
   "devDependencies": {
     "nodemon": "^3.1.4",
@@ -25,6 +25,7 @@
     "mongoose": "^8.5.0",
     "mongoose-aggregate-paginate-v2": "^1.1.1",
     "morgan": "^1.10.0",
+    "resend": "^3.5.0",
     "winston": "^3.13.1"
   }
 }
