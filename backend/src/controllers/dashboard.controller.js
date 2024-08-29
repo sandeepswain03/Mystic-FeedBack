@@ -38,6 +38,8 @@ const updateMessageAcceptance = asyncHandler(async (req, res) => {
 });
 
 const getMessageAcceptanceStatus = asyncHandler(async (req, res) => {
+    console.log("Hello");
+    
     const userId = req.user._id;
 
     try {
