@@ -31,7 +31,7 @@ const userSchema = new Schema({
     refreshToken: {
         type: String
     },
-    isAcceptingMesasge: {
+    isAcceptingMessages: {
         type: Boolean,
         default: true
     },
@@ -41,7 +41,7 @@ const userSchema = new Schema({
             ref: "Message"
         }
     ]
-});
+}, { timestamps: true });
 
 userSchema.pre("save", async function (next) {
     if (!this.isModified("password")) return next;
