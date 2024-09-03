@@ -38,8 +38,6 @@ const updateMessageAcceptance = asyncHandler(async (req, res) => {
 });
 
 const getMessageAcceptanceStatus = asyncHandler(async (req, res) => {
-    console.log("Hello");
-    
     const userId = req.user._id;
 
     try {
@@ -125,9 +123,54 @@ const deleteMessage = asyncHandler(async (req, res) => {
     }
 });
 
+const deleteAllMessages = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+
+    try {
+        // Find the user and get all message IDs
+        const user = await User.findById(userId);
+
+        if (!user) {
+            throw new apiError(404, "User not found");
+        }
+
+        const messageIds = user.messages;
+
+        if (messageIds.length === 0) {
+            return res
+                .status(200)
+                .json(new apiResponse(200, null, "No messages to delete"));
+        }
+
+        // Remove all message references from the user's messages array
+        await User.updateOne(
+            { _id: userId },
+            { $set: { messages: [] } } // Clear the messages array
+        );
+
+        // Delete all message documents
+        const deleteResult = await Message.deleteMany({ _id: { $in: messageIds } });
+
+        if (deleteResult.deletedCount === 0) {
+            throw new apiError(404, "Messages not found or already deleted");
+        }
+
+        return res
+            .status(200)
+            .json(new apiResponse(200, null, "All messages deleted successfully"));
+    } catch (error) {
+        console.error("Error deleting all messages:", error);
+        throw new apiError(500, "Error deleting all messages");
+    }
+
+
+
+});
+
 export {
     getMessages,
     updateMessageAcceptance,
     getMessageAcceptanceStatus,
-    deleteMessage
+    deleteMessage,
+    deleteAllMessages
 };

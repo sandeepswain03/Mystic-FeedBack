@@ -65,6 +65,30 @@ function Dashboard() {
     setMessages(messages.filter((message) => message._id !== messageId));
   };
 
+  const deleteAllMessages = async () => {
+    try {
+      const response = await axiosInstance.delete("/dashboard/deleteAllMessages");
+      console.log("Messages deleted successfully:", response.data);
+    } catch (error) {
+      console.error("Error deleting messages:", error);
+    }
+  }
+
+  const deleteAllMessagesAndRefresh = async () => {
+    try {
+      await deleteAllMessages();
+      try {
+        const response = await axiosInstance.get("/dashboard/messages");
+        setMessages(response.data.data.messages);
+        toast.success(" All Messages Deleted successfully");
+      } catch (error) {
+        console.error("Error fetching messages:", error);
+      }
+    } catch (error) {
+      console.error("Error during delete and fetch process:", error);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col lg:flex-row">
       <aside className="w-full lg:w-1/4 p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-gray-700">
@@ -115,6 +139,13 @@ function Dashboard() {
             <h2 className="text-xl lg:text-2xl font-semibold mb-4 sm:mb-0">
               Messages Received: {messages.length}
             </h2>
+            <button
+              className="bg-blue-500 text-white px-3 py-2 lg:px-4 lg:py-2 rounded-md flex items-center hover:bg-blue-600 transition-colors duration-200"
+              onClick={() => deleteAllMessagesAndRefresh()}
+            // disabled={isLoading}
+            >
+              Delete All
+            </button>
             <button
               className="bg-blue-500 text-white px-3 py-2 lg:px-4 lg:py-2 rounded-md flex items-center hover:bg-blue-600 transition-colors duration-200"
               onClick={() => fetchMessages(true)}

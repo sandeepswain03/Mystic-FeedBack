@@ -1,7 +1,7 @@
 /* eslint-disable react/prop-types */
 import { useState, useEffect } from "react";
 import UserContext from "./userContext.js";
-import axiosInstance from "../axiosInstance";
+import axiosInstance from "../axiosInstance.js";
 
 export default function UserContextProvider({ children }) {
   const [user, setUser] = useState(null);

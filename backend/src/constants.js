@@ -1,1 +1,1 @@
-export const DB_NAME = "FullStack_MysticFeedback";
+export const DB_NAME = "Feedback";
