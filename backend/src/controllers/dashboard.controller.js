@@ -167,10 +167,38 @@ const deleteAllMessages = asyncHandler(async (req, res) => {
 
 });
 
+const questionUpdate = asyncHandler(async (req, res) => {
+    const userId = req.user._id;
+    const { question } = req.body;
+
+    try {
+        const updatedUser = await User.findByIdAndUpdate(
+            userId,
+            { question: question },
+            { new: true }
+        ).select("-password -refreshToken");
+        if (updatedUser) {
+            return res
+                .status(200)
+                .json(
+                    new apiResponse(
+                        200,
+                        { updatedUser },
+                        "Question acceptance status updated successfully"
+                    )
+                );
+        }
+
+    } catch (error) {
+        console.error("Error updating Question acceptance status:", error);
+        throw new apiError(500, "Error updating Question acceptance status");
+    }
+})
 export {
     getMessages,
     updateMessageAcceptance,
     getMessageAcceptanceStatus,
     deleteMessage,
-    deleteAllMessages
+    deleteAllMessages,
+    questionUpdate
 };

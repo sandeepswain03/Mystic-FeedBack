@@ -40,7 +40,11 @@ const userSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: "Message"
         }
-    ]
+    ],
+    question: {
+        type: String,
+        // required: [true, "Question is required"]
+    }
 }, { timestamps: true });
 
 userSchema.pre("save", async function (next) {

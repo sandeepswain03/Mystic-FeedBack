@@ -1,14 +1,17 @@
-import { useState } from "react";
+import { useContext, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import axiosInstance from "../axiosInstance";
 import toast from "react-hot-toast";
 import { FiSend, FiUser } from "react-icons/fi";
 
+
 function SendMessage() {
   const { username } = useParams();
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isMessageSent, setIsMessageSent] = useState(false)
+  const [isMessageSent, setIsMessageSent] = useState(false);
+  const [que, setQue] = useState("");
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,6 +33,23 @@ function SendMessage() {
       setIsLoading(false);
     }
   };
+
+  const getQue = async () => {
+    try {
+      const response = await axiosInstance.get("/user/current-user");
+      console.log(response);
+
+      if (response) setQue(response.data.data.user.question)
+    } catch (error) {
+      console.error("Error fetching current user:", error);
+    }
+  }
+
+  useEffect(() => {
+    getQue();
+  }, []);
+
+
   if (!isMessageSent) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 flex items-center justify-center px-4 sm:px-6 lg:px-8">
@@ -45,6 +65,19 @@ function SendMessage() {
               to <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">{username}</span>
             </p>
           </div>
+
+
+          <div className="flex items-center justify-between bg-gray-700 rounded-md overflow-hidden mb-6 lg:mb-8">
+            <input
+              type="text"
+              value={que}
+              readOnly
+              className="w-full p-2 lg:p-3 bg-transparent text-white text-sm lg:text-base"
+            />
+
+          </div>
+
+
           <form onSubmit={handleSubmit} className="mt-8 space-y-6">
             <div className="rounded-md shadow-sm">
               <textarea

@@ -8,12 +8,13 @@ import { FiRefreshCw, FiCopy } from "react-icons/fi";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 function Dashboard() {
-  const { user } = useContext(UserContext);
+  const { user, setUser } = useContext(UserContext);
   const baseUrl = `${window.location.protocol}//${window.location.host}`;
   const profileUrl = `${baseUrl}/profile/${user.username}`;
   const [acceptMessages, setAcceptMessages] = useState(false);
   const [messages, setMessages] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [question, setQuestion] = useState("")
 
   const fetchMessageAcceptanceStatus = useCallback(async () => {
     try {
@@ -65,18 +66,14 @@ function Dashboard() {
     setMessages(messages.filter((message) => message._id !== messageId));
   };
 
-  const deleteAllMessages = async () => {
-    try {
-      const response = await axiosInstance.delete("/dashboard/deleteAllMessages");
-      console.log("Messages deleted successfully:", response.data);
-    } catch (error) {
-      console.error("Error deleting messages:", error);
-    }
-  }
-
   const deleteAllMessagesAndRefresh = async () => {
     try {
-      await deleteAllMessages();
+      try {
+        const response = await axiosInstance.delete("/dashboard/deleteAllMessages");
+        console.log("Messages deleted successfully:", response.data);
+      } catch (error) {
+        console.error("Error deleting messages:", error);
+      }
       try {
         const response = await axiosInstance.get("/dashboard/messages");
         setMessages(response.data.data.messages);
@@ -86,6 +83,19 @@ function Dashboard() {
       }
     } catch (error) {
       console.error("Error during delete and fetch process:", error);
+    }
+  }
+
+
+  const questionHandelling = async () => {
+    try {
+      const response = await axiosInstance.post("/dashboard/question-update", {
+        question
+      });
+      toast.success("Question Sent successfully");
+
+    } catch (error) {
+      console.error("Error during saving question to the data base:", error);
     }
   }
 
@@ -129,6 +139,22 @@ function Dashboard() {
             id="acceptMessages"
           />
         </div>
+        <div className="flex items-center justify-between bg-gray-700 rounded-md overflow-hidden mb-6 lg:mb-8 mt-4">
+          <input
+            type="text"
+            value={question}
+            onChange={(e) => setQuestion(e.target.value)}
+            placeholder="Ask Question"
+            className="w-full p-2 lg:p-3 bg-transparent text-white text-sm lg:text-base"
+          />
+          <button
+            onClick={questionHandelling}
+            className="bg-blue-500 text-white p-2 lg:p-3 hover:bg-blue-600 transition-colors duration-200"
+          >
+            <FiCopy className="h-4 w-4 lg:h-5 lg:w-5" />
+          </button>
+        </div>
+
       </aside>
       <main className="flex-1 flex flex-col h-screen overflow-hidden">
         <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold p-4 lg:p-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
