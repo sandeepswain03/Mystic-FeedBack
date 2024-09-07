@@ -99,6 +99,37 @@ function Dashboard() {
     }
   }
 
+  const downloadMessages = async () => {
+    try {
+      // Making request to download PDF
+      const response = await axiosInstance.get("/dashboard/pdf-generate", {
+        responseType: "blob", // Important to specify blob type response
+      });
+      console.log(response);
+
+      // Create a blob URL from the PDF response
+      const blob = new Blob([response.data], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(blob);
+
+      // Create a temporary anchor element and trigger the download
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", "messages.pdf"); // Set the file name
+
+      // Append the anchor to the document body and click it to trigger the download
+      document.body.appendChild(link);
+      link.click();
+
+      // Clean up by removing the anchor and revoking the blob URL
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      toast.success("PDF Exported successfully");
+
+    } catch (error) {
+      console.error("Error downloading the PDF:", error);
+    }
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col lg:flex-row">
       <aside className="w-full lg:w-1/4 p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-gray-700">
@@ -168,9 +199,14 @@ function Dashboard() {
             <button
               className="bg-blue-500 text-white px-3 py-2 lg:px-4 lg:py-2 rounded-md flex items-center hover:bg-blue-600 transition-colors duration-200"
               onClick={() => deleteAllMessagesAndRefresh()}
-            // disabled={isLoading}
             >
               Delete All
+            </button>
+            <button
+              className="bg-blue-500 text-white px-3 py-2 lg:px-4 lg:py-2 rounded-md flex items-center hover:bg-blue-600 transition-colors duration-200"
+              onClick={() => downloadMessages()}
+            >
+              Export Messages
             </button>
             <button
               className="bg-blue-500 text-white px-3 py-2 lg:px-4 lg:py-2 rounded-md flex items-center hover:bg-blue-600 transition-colors duration-200"

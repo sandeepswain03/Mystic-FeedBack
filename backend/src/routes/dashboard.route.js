@@ -5,7 +5,8 @@ import {
     getMessageAcceptanceStatus,
     deleteMessage,
     deleteAllMessages,
-    questionUpdate
+    questionUpdate,
+    pdfGenerate
 } from "../controllers/dashboard.controller.js";
 import verifyJWT from "../middlewares/auth.middleware.js";
 
@@ -17,5 +18,6 @@ router.route("/messages").get(verifyJWT, getMessages);
 router.route("/messages/:messageId").delete(verifyJWT, deleteMessage);
 router.route("/deleteAllMessages").delete(verifyJWT, deleteAllMessages);
 router.route("/question-update").post(verifyJWT, questionUpdate);
+router.route("/pdf-generate").get(verifyJWT, pdfGenerate);
 
 export default router;

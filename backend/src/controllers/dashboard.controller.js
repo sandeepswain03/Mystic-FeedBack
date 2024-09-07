@@ -3,6 +3,7 @@ import asyncHandler from "../utils/asyncHandler.js";
 import apiResponse from "../utils/apiResponse.js";
 import { User } from "../models/user.model.js";
 import { Message } from "../models/message.model.js";
+import PDFDocument from 'pdfkit'
 
 const updateMessageAcceptance = asyncHandler(async (req, res) => {
     const userId = req.user._id;
@@ -194,11 +195,39 @@ const questionUpdate = asyncHandler(async (req, res) => {
         throw new apiError(500, "Error updating Question acceptance status");
     }
 })
+
+const pdfGenerate = asyncHandler(async (req, res) => {
+    try {
+        const doc = new PDFDocument();
+
+        const messages = await Message.find({ owner: req.user._id });
+
+        // Add content to the PDF
+        messages.forEach((message, index) => {
+            doc.text(`Message ${index + 1}: ${message.content}`);
+        });
+
+        // Set headers for PDF response
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader("Content-Disposition", "attachment; filename=messages.pdf");
+
+        // Pipe the PDF document to the response
+        doc.pipe(res);
+
+        // Finalize the PDF and close the stream
+        doc.end();
+    } catch (error) {
+        console.log(error);
+
+    }
+
+})
 export {
     getMessages,
     updateMessageAcceptance,
     getMessageAcceptanceStatus,
     deleteMessage,
     deleteAllMessages,
-    questionUpdate
+    questionUpdate,
+    pdfGenerate
 };
