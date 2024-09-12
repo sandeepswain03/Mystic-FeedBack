@@ -167,45 +167,11 @@ const getCurrentUser = asyncHandler(async (req, res) => {
         );
 });
 
-const sendMessage = asyncHandler(async (req, res) => {
-    const { username, content } = req.body;
-
-    try {
-        const user = await User.findOne({ username });
-
-        if (!user) {
-            throw new apiError(404, "User not found");
-        }
-
-        // Check if the user is accepting messages
-        if (!user.isAcceptingMessages) {
-            throw new apiError(403, "User is not accepting messages");
-        }
-
-        // Create a new message document
-        const newMessage = await Message.create({
-            content,
-            owner: user._id
-        });
-
-        // Push the new message's _id to the user's messages array
-        user.messages.push(newMessage._id);
-        await user.save();
-
-        return res
-            .status(201)
-            .json(new apiResponse(201, null, "Message sent successfully"));
-    } catch (error) {
-        console.error("Error adding message:", error);
-        throw new apiError(500, "Internal server error");
-    }
-});
 
 export {
     registerUser,
     loginUser,
     logoutUser,
-    sendMessage,
     refreshAccessToken,
     getCurrentUser
 };

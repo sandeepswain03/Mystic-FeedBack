@@ -5,12 +5,17 @@ import { toast } from "react-hot-toast";
 import dayjs from "dayjs";
 import { FiTrash2, FiClock } from "react-icons/fi";
 
-function MessageCard({ message, onDelete }) {
+function MessageCard({ message, questionId, onDelete }) {
   const [showConfirm, setShowConfirm] = useState(false);
 
   const handleDelete = async () => {
     try {
-      await axiosInstance.delete(`/dashboard/messages/${message._id}`);
+      await axiosInstance.delete(`/dashboard/messages/${message._id}`, {
+        data: {
+          questionId: questionId
+        }
+      });
+      setShowConfirm(false)
       onDelete(message._id);
       toast.success("Message deleted successfully");
     } catch (error) {
@@ -69,6 +74,8 @@ MessageCard.propTypes = {
     content: PropTypes.string.isRequired,
     createdAt: PropTypes.string.isRequired,
   }).isRequired,
+  questionId: PropTypes.string.isRequired,
+
   onDelete: PropTypes.func.isRequired,
 };
 

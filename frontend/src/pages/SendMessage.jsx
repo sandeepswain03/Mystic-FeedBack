@@ -6,47 +6,69 @@ import { FiSend, FiUser } from "react-icons/fi";
 
 
 function SendMessage() {
-  const { username } = useParams();
+  const { questionId } = useParams();
   const [message, setMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isMessageSent, setIsMessageSent] = useState(false);
-  const [que, setQue] = useState("");
-
+  const [question, setQuestion] = useState("");
+  const [userName, setUserName] = useState("");
+  const [acceptanceStatus, setAcceptanceStatus] = useState(true)
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await axiosInstance.post("/user/send-message", {
-        username,
-        content: message,
-      });
-      toast.success("Message sent successfully");
-      setMessage("");
-      setIsMessageSent(true)
+      if (acceptanceStatus) {
+        await axiosInstance.post("/feedback/send-message", {
+          questionId,
+          content: message,
+        });
+        toast.success("Message sent successfully");
+        setMessage("");
+        setIsMessageSent(true)
+      } else {
+        toast.error("User not Accepting Messages")
+      }
     } catch (error) {
-      toast.error(
-        error.response?.data?.message ||
-        `${username} is not accepting messages right now`
-      );
+      console.log("Error Sending Message", error);
+
     } finally {
       setIsLoading(false);
     }
   };
 
-  const getQue = async () => {
+  const getQuestionAndUsername = async () => {
     try {
-      const response = await axiosInstance.get("/user/current-user");
-      console.log(response);
+      const question = await axiosInstance.get("/feedback/getQuestion", {
+        params: {
+          queId: questionId
+        }
+      });
+      if (question) {
+        setQuestion(question.data.data.content);
+        setAcceptanceStatus(question.data.data.
+          isAcceptingMessages);
+      }
+      try {
+        const username = await axiosInstance.get("/feedback/getUserName", {
+          params: {
+            Id: question.data.data.owner
+          }
+        });
+        setUserName(username.data.data)
 
-      if (response) setQue(response.data.data.user.question)
+      } catch (error) {
+        console.log("Error Fetching username:", error);
+
+      }
+
     } catch (error) {
-      console.error("Error fetching current user:", error);
+      console.error("Error fetching question:", error);
     }
   }
-
   useEffect(() => {
-    getQue();
+    getQuestionAndUsername();
+
   }, []);
 
 
@@ -62,7 +84,7 @@ function SendMessage() {
               Send a Message
             </h1>
             <p className="text-xl text-white">
-              to <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">{username}</span>
+              to <span className="font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">{userName}</span>
             </p>
           </div>
 
@@ -70,7 +92,7 @@ function SendMessage() {
           <div className="flex items-center justify-between bg-gray-700 rounded-md overflow-hidden mb-6 lg:mb-8">
             <input
               type="text"
-              value={que}
+              value={question}
               readOnly
               className="w-full p-2 lg:p-3 bg-transparent text-white text-sm lg:text-base"
             />

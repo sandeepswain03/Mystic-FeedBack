@@ -8,238 +8,319 @@ import { FiRefreshCw, FiCopy } from "react-icons/fi";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
 
 function Dashboard() {
-  const { user, setUser } = useContext(UserContext);
-  const baseUrl = `${window.location.protocol}//${window.location.host}`;
-  const profileUrl = `${baseUrl}/profile/${user.username}`;
-  const [acceptMessages, setAcceptMessages] = useState(false);
-  const [messages, setMessages] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [question, setQuestion] = useState("")
+    const { user } = useContext(UserContext);
+    // const profileUrl = `${window.location.protocol}//${window.location.host}/profile/${activeQuestion._id}`;
+    const [acceptMessages, setAcceptMessages] = useState(true);
+    const [messages, setMessages] = useState([]);
+    const [isLoading, setIsLoading] = useState(false);
+    const [questionInput, setQuestionInput] = useState("");
+    const [questions, setQuestions] = useState([]);
+    const [activeQuestion, setActiveQuestion] = useState(null);
+    const [showLinkConfirm, setShowLinkConfirm] = useState(false)
+    const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
 
-  const fetchMessageAcceptanceStatus = useCallback(async () => {
-    try {
-      const response = await axiosInstance.get("/dashboard/message-acceptance");
-      setAcceptMessages(response.data.data.isAcceptingMessages);
-    } catch (error) {
-      console.error("Error fetching message acceptance status:", error);
-      toast.error("Failed to fetch message acceptance status");
+    const fetchMessages = useCallback(async (showLoading = false) => {
+        if (showLoading) setIsLoading(true);
+        try {
+            if (activeQuestion) {
+                const response = await axiosInstance.get(`/dashboard/messages/${activeQuestion._id}`);
+                console.log(response.data.data.messages.messages);
+
+                setMessages(response.data.data.messages.messages);
+            }
+        } catch (error) {
+            console.error("Error fetching messages:", error);
+        } finally {
+            if (showLoading) setIsLoading(false);
+        }
+    }, [activeQuestion]);
+
+    const fetchQuestions = useCallback(async () => {
+        try {
+
+            const response = await axiosInstance.get("/dashboard/fetchAllQuestion");
+            setQuestions(response.data.data);
+
+        } catch (error) {
+            console.log(error.message);
+        }
+    }, [])
+
+    useEffect(() => {
+        fetchQuestions();
+        if (activeQuestion) fetchMessages();
+    }, [activeQuestion, fetchMessages]);
+
+    const handleAddQuestion = async () => {
+        setQuestionInput("");
+        setActiveQuestion(null);
+    };
+
+    const handleSaveQuestion = async () => {
+        if (questionInput.trim() === "") {
+            toast.error("Question cannot be empty");
+            return;
+        }
+        const newQuestion = await axiosInstance.post("/dashboard/createQuestion", {
+            question: questionInput
+        });
+        setActiveQuestion(newQuestion.data.data)
+        setQuestions([newQuestion.data.data, ...questions]);
+        setQuestionInput("")
+        toast.success("Question Saved Successfully")
+    };
+
+    const handleSwitchChange = async (checked) => {
+        try {
+            const updated = await axiosInstance.put("/dashboard/message-acceptance", { acceptMessages: checked, questionId: activeQuestion._id });
+            setAcceptMessages(checked);
+            console.log(updated.data)
+            toast.success("Message acceptance status updated");
+        } catch (error) {
+            console.error("Error updating message acceptance status:", error);
+            toast.error("Failed to update message acceptance status");
+        }
+    };
+
+    const downloadMessages = async () => {
+        try {
+            const response = await axiosInstance.get("/dashboard/pdf-generate", {
+                params: activeQuestion ? { questionId: activeQuestion._id } : toast.error("Unable To Download"),
+                responseType: "blob",
+            });
+            const blob = new Blob([response.data], { type: "application/pdf" });
+            const url = window.URL.createObjectURL(blob);
+
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", "messages.pdf");
+
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            window.URL.revokeObjectURL(url);
+
+            toast.success("PDF Exported successfully");
+        } catch (error) {
+            console.error("Error downloading the PDF:", error);
+        }
+    };
+
+    const refreshMessages = () => {
+        fetchMessages(true);
+    };
+
+    const deleteAllMessagesAndRefresh = async () => {
+        try {
+            await axiosInstance.delete("/dashboard/deleteAllMessages", {
+                data: {
+                    questionId: activeQuestion._id
+                }
+            });
+            refreshMessages();
+            toast.success("All Messages Deleted successfully");
+            setShowDeleteAllConfirm(false);
+        } catch (error) {
+            console.error("Error deleting messages:", error);
+        }
+    };
+
+    const generateLink = async () => {
+
+        setShowLinkConfirm(true)
     }
-  }, []);
 
-  const fetchMessages = useCallback(async (showLoading = false) => {
-    if (showLoading) setIsLoading(true);
-    try {
-      const response = await axiosInstance.get("/dashboard/messages");
-      setMessages(response.data.data.messages);
-      if (showLoading) toast.success("Messages refreshed successfully");
-    } catch (error) {
-      console.error("Error fetching messages:", error);
-    } finally {
-      if (showLoading) setIsLoading(false);
-    }
-  }, []);
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(activeQuestion ? `${window.location.protocol}//${window.location.host}/profile/${activeQuestion._id}` : toast.error("Unable to copy Link"));
+        toast.success("Link copied to clipboard");
+    };
 
-  useEffect(() => {
-    fetchMessageAcceptanceStatus();
-    fetchMessages();
-  }, [fetchMessageAcceptanceStatus, fetchMessages]);
+    const handleDeleteMessage = (messageId) => {
+        setMessages(messages.filter((message) => message._id !== messageId));
+    };
 
-  const handleSwitchChange = async (checked) => {
-    try {
-      await axiosInstance.put("/dashboard/message-acceptance", {
-        acceptMessages: checked,
-      });
-      setAcceptMessages(checked);
-      toast.success("Message acceptance status updated successfully");
-    } catch (error) {
-      console.error("Error updating message acceptance status:", error);
-      toast.error("Failed to update message acceptance status");
-    }
-  };
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col lg:flex-row">
+            {/* Aside Panel for Questions */}
+            <aside className="w-full lg:w-1/4 p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-gray-700">
+                <button
+                    onClick={handleAddQuestion}
+                    className="bg-blue-500 text-white p-2 w-full rounded-md hover:bg-blue-600 mb-4"
+                >
+                    Add New Question
+                </button>
+                <h2 className="text-xl lg:text-2xl font-semibold mb-4">Your Questions</h2>
+                <div className="space-y-4">
+                    {questions.map((q) => (
+                        <> <div
+                            key={q._id}
+                            onClick={() => setActiveQuestion(q)}
+                            className={`p-4 rounded-md cursor-pointer ${activeQuestion?._id === q._id ? "bg-blue-600" : "bg-gray-700"
+                                }`}
+                        >
+                            {q.content || "New Question"}
+                            {/* <button
+                                // onClick={copyToClipboard}
+                                className="bg-blue-500 text-white p-2 lg:p-3 hover:bg-blue-600 transition-colors duration-200"
+                            >
+                                <FiCopy className="h-4 w-4 lg:h-5 lg:w-5" />
+                            </button> */}
+                        </div>
+                        </>
+                    ))}
+                </div>
+            </aside>
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(profileUrl);
-    toast.success("Link copied to clipboard");
-  };
+            {/* Main Section */}
+            <main className="flex-1 flex flex-col h-screen overflow-hidden">
+                <h1 className="text-3xl font-bold p-4 lg:p-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
+                    Dashboard
+                </h1>
+                <section className="flex-1 flex flex-col p-4 lg:px-8">
+                    {/* Input Bar for Adding Questions */}
+                    <div className="flex items-center space-x-4 mb-4">
+                        <input
+                            type="text"
+                            value={questionInput}
+                            onChange={(e) => setQuestionInput(e.target.value)}
+                            className="flex-1 p-2 rounded-md bg-gray-700 text-white"
+                            placeholder={activeQuestion ? activeQuestion.content : "Enter your Question"}
+                        />
+                        {!activeQuestion && (<button
+                            onClick={handleSaveQuestion}
+                            className="bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
+                        >
+                            Save Question
+                        </button>)}
+                        {activeQuestion && (<button
+                            className="bg-gray-700 text-white p-2 rounded-md hover:bg-gray-600"
+                            onClick={generateLink}
+                        >
+                            Generate Link
+                        </button>)}
+                    </div>
 
-  const handleDeleteMessage = (messageId) => {
-    setMessages(messages.filter((message) => message._id !== messageId));
-  };
+                    {/* Toggle Accept Messages and Delete All Button */}
+                    <div className="flex items-center space-x-4 mb-4">
+                        <div className="flex items-center justify-between">
+                            <h2 className="text-xl lg:text-2xl font-semibold">Accept Feedback</h2>
+                            <Switch
+                                onChange={handleSwitchChange}
+                                checked={activeQuestion ? activeQuestion.
+                                    isAcceptingMessages : true}
+                                onColor="#4CAF50"
+                                offColor="#ccc"
+                                onHandleColor="#fff"
+                                offHandleColor="#fff"
+                                handleDiameter={20}
+                                uncheckedIcon={false}
+                                checkedIcon={false}
+                                boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
+                                activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
+                                height={28}
+                                width={52}
+                                className="react-switch"
+                                id="acceptMessages"
+                            />
+                        </div>
+                        <button
+                            className="bg-red-500 text-white px-4 py-2 rounded-md hover:bg-red-600"
+                            onClick={() => { setShowDeleteAllConfirm(true) }}
+                        >
+                            Delete All Messages
+                        </button>
+                        <button
+                            className="bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200"
+                            onClick={downloadMessages}
+                        >
+                            Export Messages
+                        </button>
+                        <button
+                            className="bg-blue-500 text-white px-3 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200"
+                            onClick={refreshMessages}
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <AiOutlineLoading3Quarters className="h-4 w-4 lg:h-5 lg:w-5 animate-spin mr-2" />
+                            ) : (
+                                <FiRefreshCw className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
+                            )}
+                            Refresh
+                        </button>
+                    </div>
 
-  const deleteAllMessagesAndRefresh = async () => {
-    try {
-      try {
-        const response = await axiosInstance.delete("/dashboard/deleteAllMessages");
-        console.log("Messages deleted successfully:", response.data);
-      } catch (error) {
-        console.error("Error deleting messages:", error);
-      }
-      try {
-        const response = await axiosInstance.get("/dashboard/messages");
-        setMessages(response.data.data.messages);
-        toast.success(" All Messages Deleted successfully");
-      } catch (error) {
-        console.error("Error fetching messages:", error);
-      }
-    } catch (error) {
-      console.error("Error during delete and fetch process:", error);
-    }
-  }
+                    {/* Display Messages */}
+                    <div className="flex-1 overflow-y-auto">
+                        {messages.length > 0 ? (
+                            <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                                {messages.map((message) => (
+                                    <MessageCard
+                                        questionId={activeQuestion ? activeQuestion._id : ""}
+                                        message={message}
+                                        onDelete={handleDeleteMessage} />
+                                ))}
+                            </div>
+                        ) : (
+                            <p className="text-gray-400 text-center">No messages yet.</p>
+                        )}
+                    </div>
+                </section>
+            </main>
 
-
-  const questionHandelling = async () => {
-    try {
-      const response = await axiosInstance.post("/dashboard/question-update", {
-        question
-      });
-      toast.success("Question Sent successfully");
-
-    } catch (error) {
-      console.error("Error during saving question to the data base:", error);
-    }
-  }
-
-  const downloadMessages = async () => {
-    try {
-      // Making request to download PDF
-      const response = await axiosInstance.get("/dashboard/pdf-generate", {
-        responseType: "blob", // Important to specify blob type response
-      });
-      console.log(response);
-
-      // Create a blob URL from the PDF response
-      const blob = new Blob([response.data], { type: "application/pdf" });
-      const url = window.URL.createObjectURL(blob);
-
-      // Create a temporary anchor element and trigger the download
-      const link = document.createElement("a");
-      link.href = url;
-      link.setAttribute("download", "messages.pdf"); // Set the file name
-
-      // Append the anchor to the document body and click it to trigger the download
-      document.body.appendChild(link);
-      link.click();
-
-      // Clean up by removing the anchor and revoking the blob URL
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      toast.success("PDF Exported successfully");
-
-    } catch (error) {
-      console.error("Error downloading the PDF:", error);
-    }
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col lg:flex-row">
-      <aside className="w-full lg:w-1/4 p-4 lg:p-8 border-b lg:border-b-0 lg:border-r border-gray-700">
-        <h2 className="text-xl lg:text-2xl font-semibold mb-4">
-          Your Unique Profile Link
-        </h2>
-        <div className="flex items-center justify-between bg-gray-700 rounded-md overflow-hidden mb-6 lg:mb-8">
-          <input
-            type="text"
-            value={profileUrl}
-            readOnly
-            className="w-full p-2 lg:p-3 bg-transparent text-white text-sm lg:text-base"
-          />
-          <button
-            onClick={copyToClipboard}
-            className="bg-blue-500 text-white p-2 lg:p-3 hover:bg-blue-600 transition-colors duration-200"
-          >
-            <FiCopy className="h-4 w-4 lg:h-5 lg:w-5" />
-          </button>
-        </div>
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl lg:text-2xl font-semibold">Accept Messages</h2>
-          <Switch
-            onChange={handleSwitchChange}
-            checked={acceptMessages}
-            onColor="#4CAF50"
-            offColor="#ccc"
-            onHandleColor="#fff"
-            offHandleColor="#fff"
-            handleDiameter={20}
-            uncheckedIcon={false}
-            checkedIcon={false}
-            boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
-            activeBoxShadow="0px 0px 1px 10px rgba(0, 0, 0, 0.2)"
-            height={28}
-            width={52}
-            className="react-switch"
-            id="acceptMessages"
-          />
-        </div>
-        <div className="flex items-center justify-between bg-gray-700 rounded-md overflow-hidden mb-6 lg:mb-8 mt-4">
-          <input
-            type="text"
-            value={question}
-            onChange={(e) => setQuestion(e.target.value)}
-            placeholder="Ask Question"
-            className="w-full p-2 lg:p-3 bg-transparent text-white text-sm lg:text-base"
-          />
-          <button
-            onClick={questionHandelling}
-            className="bg-blue-500 text-white p-2 lg:p-3 hover:bg-blue-600 transition-colors duration-200"
-          >
-            <FiCopy className="h-4 w-4 lg:h-5 lg:w-5" />
-          </button>
-        </div>
-
-      </aside>
-      <main className="flex-1 flex flex-col h-screen overflow-hidden">
-        <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold p-4 lg:p-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-600">
-          Dashboard
-        </h1>
-        <section className="flex-1 overflow-hidden flex flex-col">
-          <div className="flex flex-col sm:flex-row justify-between items-center p-4 lg:px-8">
-            <h2 className="text-xl lg:text-2xl font-semibold mb-4 sm:mb-0">
-              Messages Received: {messages.length}
-            </h2>
-            <button
-              className="bg-blue-500 text-white px-3 py-2 lg:px-4 lg:py-2 rounded-md flex items-center hover:bg-blue-600 transition-colors duration-200"
-              onClick={() => deleteAllMessagesAndRefresh()}
-            >
-              Delete All
-            </button>
-            <button
-              className="bg-blue-500 text-white px-3 py-2 lg:px-4 lg:py-2 rounded-md flex items-center hover:bg-blue-600 transition-colors duration-200"
-              onClick={() => downloadMessages()}
-            >
-              Export Messages
-            </button>
-            <button
-              className="bg-blue-500 text-white px-3 py-2 lg:px-4 lg:py-2 rounded-md flex items-center hover:bg-blue-600 transition-colors duration-200"
-              onClick={() => fetchMessages(true)}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <AiOutlineLoading3Quarters className="h-4 w-4 lg:h-5 lg:w-5 animate-spin mr-2" />
-              ) : (
-                <FiRefreshCw className="h-4 w-4 lg:h-5 lg:w-5 mr-2" />
-              )}
-              Refresh
-            </button>
-          </div>
-          <div className="flex-1 overflow-y-auto px-4 lg:px-8 pb-4">
-            {messages.length > 0 ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {messages.map((message) => (
-                  <MessageCard
-                    key={message._id}
-                    message={message}
-                    onDelete={handleDeleteMessage}
-                  />
-                ))}
-              </div>
-            ) : (
-              <p className="text-gray-400 text-center">No messages yet.</p>
+            {showLinkConfirm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full">
+                        <h3 className="text-white text-xl font-semibold mb-4">Generated Link</h3>
+                        <div className="mb-4">
+                            <input
+                                type="text"
+                                value={activeQuestion ? `${window.location.protocol}//${window.location.host}/profile/${activeQuestion._id}` : "Save the question to Generate URL"}
+                                readOnly
+                                className="bg-gray-700 text-white px-4 py-2 w-full rounded"
+                            />
+                        </div>
+                        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+                            <button
+                                onClick={copyToClipboard}
+                                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors duration-200 w-full sm:w-auto"
+                            >
+                                Copy to Clipboard
+                            </button>
+                            <button
+                                onClick={() => setShowLinkConfirm(false)}
+                                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors duration-200 w-full sm:w-auto"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
             )}
-          </div>
-        </section>
-      </main>
-    </div>
-  );
+            {showDeleteAllConfirm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full">
+                        <h3 className="text-white text-xl font-semibold mb-4">Confirm Deletion</h3>
+                        <p className="text-gray-300 mb-6">Are you sure you want to delete All this message? This action cannot be undone.</p>
+                        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+                            <button
+                                onClick={deleteAllMessagesAndRefresh}
+                                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-200 w-full sm:w-auto"
+                            >
+                                Delete All Messages
+                            </button>
+                            <button
+                                onClick={() => setShowDeleteAllConfirm(false)}
+                                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors duration-200 w-full sm:w-auto"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+        </div>
+    );
 }
 
 export default Dashboard;

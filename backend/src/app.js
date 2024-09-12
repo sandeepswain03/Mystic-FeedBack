@@ -43,8 +43,11 @@ app.use(cookieParser());
 //import routes
 import userRoute from "./routes/user.route.js";
 import dashboardRoute from "./routes/dashboard.route.js";
+import feedbackRoute from "./routes/feedback.route.js"
 
 //routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/dashboard", dashboardRoute);
+app.use("/api/v1/feedback", feedbackRoute)
+
 export default app;

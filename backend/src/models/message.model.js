@@ -7,9 +7,9 @@ const messageSchema = new Schema(
             required: true,
             maxLength: [200, "Message should be at most 200 characters long"]
         },
-        owner: {
+        queOwner: {
             type: Schema.Types.ObjectId,
-            ref: "User"
+            ref: "Question"
         }
     },
     { timestamps: true }

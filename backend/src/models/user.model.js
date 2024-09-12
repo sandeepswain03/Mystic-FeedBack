@@ -31,20 +31,12 @@ const userSchema = new Schema({
     refreshToken: {
         type: String
     },
-    isAcceptingMessages: {
-        type: Boolean,
-        default: true
-    },
-    messages: [
+    question: [
         {
             type: Schema.Types.ObjectId,
-            ref: "Message"
+            ref: "Question"
         }
-    ],
-    question: {
-        type: String,
-        // required: [true, "Question is required"]
-    }
+    ]
 }, { timestamps: true });
 
 userSchema.pre("save", async function (next) {

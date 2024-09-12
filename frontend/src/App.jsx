@@ -46,7 +46,7 @@ function App() {
             }
           />
         </Route>
-        <Route path="profile/:username" element={<SendMessage />} />
+        <Route path="profile/:questionId" element={<SendMessage />} />
       </Routes>
       <Toaster
         position="top-right"

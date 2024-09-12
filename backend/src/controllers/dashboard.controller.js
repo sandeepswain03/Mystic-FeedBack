@@ -3,23 +3,24 @@ import asyncHandler from "../utils/asyncHandler.js";
 import apiResponse from "../utils/apiResponse.js";
 import { User } from "../models/user.model.js";
 import { Message } from "../models/message.model.js";
+import { Question } from "../models/question.model.js";
 import PDFDocument from 'pdfkit'
 
 const updateMessageAcceptance = asyncHandler(async (req, res) => {
-    const userId = req.user._id;
-    const { acceptMessages } = req.body;
+
+    const { acceptMessages, questionId } = req.body;
 
     try {
-        const updatedUser = await User.findByIdAndUpdate(
-            userId,
+        const updatedQuestion = await Question.findByIdAndUpdate(
+            questionId,
             { isAcceptingMessages: acceptMessages },
             { new: true }
-        ).select("-password -refreshToken");
+        )
 
-        if (!updatedUser) {
+        if (!updatedQuestion) {
             throw new apiError(
                 404,
-                "Unable to find user to update message acceptance status"
+                "Unable to find Question to update message acceptance status"
             );
         }
 
@@ -28,7 +29,7 @@ const updateMessageAcceptance = asyncHandler(async (req, res) => {
             .json(
                 new apiResponse(
                     200,
-                    { updatedUser },
+                    updatedQuestion,
                     "Message acceptance status updated successfully"
                 )
             );
@@ -64,18 +65,19 @@ const getMessageAcceptanceStatus = asyncHandler(async (req, res) => {
 });
 
 const getMessages = asyncHandler(async (req, res) => {
-    const userId = req.user._id;
+    const queId = req.params.questionId;
 
     try {
-        const user = await User.findById(userId)
+        const messages = await Question.findById(queId)
             .populate({
                 path: "messages",
                 options: { sort: { createdAt: -1 } }
             })
             .select("messages");
 
-        if (!user) {
-            throw new apiError(404, "User not found");
+
+        if (!messages) {
+            throw new apiError(404, "Messages not found");
         }
 
         return res
@@ -83,7 +85,7 @@ const getMessages = asyncHandler(async (req, res) => {
             .json(
                 new apiResponse(
                     200,
-                    { messages: user.messages },
+                    { messages },
                     "Messages retrieved successfully"
                 )
             );
@@ -94,13 +96,12 @@ const getMessages = asyncHandler(async (req, res) => {
 });
 
 const deleteMessage = asyncHandler(async (req, res) => {
-    const userId = req.user._id;
-    const { messageId } = req.params;
-
+    const { questionId } = req.body;
+    const messageId = req.params.messageId;
     try {
         // First, remove the message reference from the user's messages array
-        const updateResult = await User.updateOne(
-            { _id: userId },
+        const updateResult = await Question.updateOne(
+            { _id: questionId },
             { $pull: { messages: messageId } }
         );
 
@@ -125,17 +126,16 @@ const deleteMessage = asyncHandler(async (req, res) => {
 });
 
 const deleteAllMessages = asyncHandler(async (req, res) => {
-    const userId = req.user._id;
-
+    const { questionId } = req.body;
     try {
         // Find the user and get all message IDs
-        const user = await User.findById(userId);
+        const question = await Question.findById(questionId);
 
-        if (!user) {
-            throw new apiError(404, "User not found");
+        if (!question) {
+            throw new apiError(404, "Question not found");
         }
 
-        const messageIds = user.messages;
+        const messageIds = question.messages;
 
         if (messageIds.length === 0) {
             return res
@@ -144,8 +144,8 @@ const deleteAllMessages = asyncHandler(async (req, res) => {
         }
 
         // Remove all message references from the user's messages array
-        await User.updateOne(
-            { _id: userId },
+        await Question.updateOne(
+            { _id: questionId },
             { $set: { messages: [] } } // Clear the messages array
         );
 
@@ -198,9 +198,10 @@ const questionUpdate = asyncHandler(async (req, res) => {
 
 const pdfGenerate = asyncHandler(async (req, res) => {
     try {
+        const questionId = req.query.questionId;
         const doc = new PDFDocument();
 
-        const messages = await Message.find({ owner: req.user._id });
+        const messages = await Message.find({ queOwner: questionId });
 
         // Add content to the PDF
         messages.forEach((message, index) => {
@@ -222,6 +223,60 @@ const pdfGenerate = asyncHandler(async (req, res) => {
     }
 
 })
+
+const createQuestion = asyncHandler(async (req, res) => {
+    try {
+        const { question } = req.body;
+        console.log(question);
+
+        const createdQuestion = await Question.create({
+            owner: req.user._id,
+            content: question
+        });
+        const updatedUser = await User.updateOne(
+            { _id: req.user._id },
+            { $push: { question: createdQuestion._id } }
+        );
+        return res
+            .status(200)
+            .json(
+                new apiResponse(201, createdQuestion, "Question instance Created")
+            )
+
+    } catch (error) {
+        console.log(error.message);
+    }
+
+});
+
+const fetchAllQuestion = asyncHandler(async (req, res) => {
+    try {
+        const userId = req.user._id;
+        const user = await User.findById(userId).select('question');
+
+        if (user) {
+            const questions = user.question;
+
+            // Use map to return a promise for each question and await Promise.all
+            const questionArr = await Promise.all(questions.map(async (e) => {
+                const content = await Question.findById(e)
+                return content
+
+            }));
+
+            return res
+                .status(200)
+                .json(
+                    new apiResponse(200, questionArr, "question fetched")
+                );
+        }
+    } catch (error) {
+        console.log(error.message);
+        return res.status(500).json({ message: "Server error" });
+    }
+});
+
+
 export {
     getMessages,
     updateMessageAcceptance,
@@ -229,5 +284,8 @@ export {
     deleteMessage,
     deleteAllMessages,
     questionUpdate,
-    pdfGenerate
+    pdfGenerate,
+    createQuestion,
+    fetchAllQuestion,
+
 };
