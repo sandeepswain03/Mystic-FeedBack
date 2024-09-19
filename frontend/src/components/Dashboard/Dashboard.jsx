@@ -48,11 +48,15 @@ function Dashboard() {
 
     useEffect(() => {
         fetchQuestions();
-        if (activeQuestion) fetchMessages();
+        if (activeQuestion) {
+            fetchMessages();
+            setAcceptMessages(activeQuestion ? activeQuestion.isAcceptingMessages : true)
+        }
     }, [activeQuestion, fetchMessages]);
 
     const handleAddQuestion = async () => {
         setQuestionInput("");
+        setMessages([]);
         setActiveQuestion(null);
     };
 
@@ -74,6 +78,10 @@ function Dashboard() {
         try {
             const updated = await axiosInstance.put("/dashboard/message-acceptance", { acceptMessages: checked, questionId: activeQuestion._id });
             setAcceptMessages(checked);
+            setActiveQuestion((prev) => ({
+                ...prev,
+                isAcceptingMessages: checked,
+            }));
             console.log(updated.data)
             toast.success("Message acceptance status updated");
         } catch (error) {
