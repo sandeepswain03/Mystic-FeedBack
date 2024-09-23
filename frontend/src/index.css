@@ -1,4 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Hedvig+Letters+Sans&family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
+@font-face {
+    font-family: "Copernicus";
+    src: url("../public/CopernicusTrial-Book-BF66160450c2e92.ttf")
+        format("truetype");
+    font-weight: normal;
+    font-style: normal;
+}
 
 @tailwind base;
 @tailwind components;
@@ -6,8 +12,7 @@
 
 @layer base {
     html {
-        font-family: 'Hedvig Letters Sans', sans-serif;
-        font-family: 'Space Grotesk', sans-serif;
+        font-family: "Copernicus", sans-serif;
     }
 }
 
@@ -16,10 +21,10 @@ html {
     overflow-x: hidden;
 }
 ::-webkit-scrollbar {
-    width: 0;  /* Remove scrollbar space */
-    background: transparent;  /* Optional: just make scrollbar invisible */
+    width: 0; /* Remove scrollbar space */
+    background: transparent; /* Optional: just make scrollbar invisible */
 }
 /* Optional: show position indicator in red */
 ::-webkit-scrollbar-thumb {
-    background: #FF0000;
+    background: #ff0000;
 }
