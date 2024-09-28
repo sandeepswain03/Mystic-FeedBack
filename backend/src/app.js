@@ -4,6 +4,7 @@ import morgan from "morgan";
 import chalk from "chalk";
 import logger from "./utils/logger.js";
 import cookieParser from "cookie-parser";
+import apiError from "./utils/apiError.js";
 const app = express();
 app.use(
     cors({
@@ -49,5 +50,22 @@ import feedbackRoute from "./routes/feedback.route.js"
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/dashboard", dashboardRoute);
 app.use("/api/v1/feedback", feedbackRoute)
+
+app.use((err, req, res, next) => {
+    // Check if it's an instance of your custom ApiError
+    if (err instanceof apiError) {
+        return res.status(err.statusCode).json({
+            status: "error",
+            message: err.message
+        });
+    }
+
+    // Generic fallback for unknown errors
+    console.error(err.stack); // Log the error stack for debugging
+    return res.status(500).json({
+        status: "error",
+        message: "Internal Server Error",
+    });
+});
 
 export default app;

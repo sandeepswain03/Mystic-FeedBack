@@ -2,7 +2,7 @@ import { useState, useContext } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaBars, FaTimes } from "react-icons/fa";
 import UserContext from "../../contexts/userContext";
-import axiosInstance from "../../axiosInstance";
+import {axiosInstance} from "../../axiosInstance";
 import toast from "react-hot-toast";
 
 function Header() {

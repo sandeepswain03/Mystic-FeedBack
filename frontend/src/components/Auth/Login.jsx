@@ -1,7 +1,7 @@
 import { useState, useContext } from "react";
 import { useForm } from "react-hook-form";
 import { Link, useNavigate } from "react-router-dom";
-import axiosInstance from "../../axiosInstance.js";
+import { axiosInstance } from "../../axiosInstance.js";
 import toast from "react-hot-toast";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import UserContext from "../../contexts/userContext.js";
@@ -10,33 +10,31 @@ import mask from "../../../public/mask.svg";
 import { motion } from "framer-motion";
 
 function Login() {
-    const {
-        register,
-        handleSubmit,
-        formState: { errors }
-    } = useForm();
+    // Initialize form handling using react-hook-form
+    const { register, handleSubmit, formState: { errors } } = useForm();
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
     const { setUser } = useContext(UserContext);
     const { x, y } = useMousePosition();
     const size = 40;
 
+    // Handle form submission and user authentication
     const onSubmit = async (data) => {
         try {
-            const finalData = {
-                ...data,
-                username: data.email
-            }
+            const finalData = { ...data, username: data.email };
             const response = await axiosInstance.post("/user/login", finalData);
-            const { user } = response.data.data;
-            setUser(user);
-            toast.success("Login successful!");
-            navigate("/dashboard");
+            if (response.status === 200) {
+                const { user } = response.data.data;
+                setUser(user);
+                toast.success("Logged in successfully!");
+                navigate("/dashboard");
+            }
+            else{
+                throw new Error("Unexpected response status"); 
+            }
         } catch (error) {
-            toast.error(
-                error.response?.data?.message ||
-                    "Login failed. Please try again."
-            );
+            const errorMessage = error.response?.data?.message || "Something went wrong. Please try again.";
+            toast.error(errorMessage);
         }
     };
 
@@ -68,11 +66,9 @@ function Login() {
                         Sign in to your account
                     </p>
                 </div>
-                <form
-                    className="mt-8 space-y-6"
-                    onSubmit={handleSubmit(onSubmit)}
-                >
+                <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
                     <div className="rounded-md shadow-sm -space-y-px">
+                        {/* Email/Username Input */}
                         <div className="mb-6">
                             <label htmlFor="email-address" className="sr-only">
                                 Email address or Username
@@ -84,8 +80,7 @@ function Login() {
                                     type="text"
                                     autoComplete="email"
                                     {...register("email", {
-                                        required:
-                                            "Email or username is required"
+                                        required: "Email or username is required" // Validation message
                                     })}
                                     className="appearance-none rounded-lg relative block w-full px-4 py-3 border border-[#393937] placeholder-[#afa18f] text-[#afa18f] bg-[#2C2B28] focus:outline-none focus:ring-2 focus:ring-[#ec4e39] focus:border-[#ec4e39] focus:z-10 sm:text-sm transition duration-300"
                                     placeholder="Email address or Username"
@@ -93,10 +88,11 @@ function Login() {
                             </div>
                             {errors.email && (
                                 <p className="mt-2 text-sm text-[#ec4e39]">
-                                    {errors.email.message}
+                                    {errors.email.message} {/* Show validation error message */}
                                 </p>
                             )}
                         </div>
+                        {/* Password Input */}
                         <div className="mb-6">
                             <label htmlFor="password" className="sr-only">
                                 Password
@@ -105,20 +101,19 @@ function Login() {
                                 <input
                                     id="password"
                                     name="password"
-                                    type={showPassword ? "text" : "password"}
+                                    type={showPassword ? "text" : "password"} // Toggle password visibility
                                     autoComplete="current-password"
                                     {...register("password", {
-                                        required: "Password is required"
+                                        required: "Password is required" // Validation message
                                     })}
                                     className="appearance-none rounded-lg relative block w-full px-4 py-3 border border-[#393937] placeholder-[#afa18f] text-[#afa18f] bg-[#2C2B28] focus:outline-none focus:ring-2 focus:ring-[#ec4e39] focus:border-[#ec4e39] focus:z-10 sm:text-sm transition duration-300"
                                     placeholder="Password"
                                 />
+                                {/* Show/Hide Password Button */}
                                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                                     <button
                                         type="button"
-                                        onClick={() =>
-                                            setShowPassword(!showPassword)
-                                        }
+                                        onClick={() => setShowPassword(!showPassword)} // Toggle function
                                         className="text-[#afa18f] focus:outline-none hover:text-[#ec4e39] transition duration-300"
                                     >
                                         {showPassword ? (
@@ -131,12 +126,13 @@ function Login() {
                             </div>
                             {errors.password && (
                                 <p className="mt-2 text-sm text-[#ec4e39]">
-                                    {errors.password.message}
+                                    {errors.password.message} {/* Show validation error message */}
                                 </p>
                             )}
                         </div>
                     </div>
 
+                    {/* Submit Button */}
                     <div>
                         <button
                             type="submit"
@@ -146,6 +142,7 @@ function Login() {
                         </button>
                     </div>
                 </form>
+                {/* Sign-up Redirect */}
                 <div className="text-center">
                     <p className="text-sm text-[#afa18f]">
                         Don&apos;t have an account?{" "}

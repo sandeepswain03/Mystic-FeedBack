@@ -1,14 +1,16 @@
 import { useContext, useEffect, useState, useCallback } from "react";
 import UserContext from "../../contexts/userContext";
 import { toast } from "react-hot-toast";
-import axiosInstance from "../../axiosInstance";
+import { axiosInstance } from "../../axiosInstance";
 import Switch from "react-switch";
 import MessageCard from "../MessageCard";
 import { FiRefreshCw, FiCopy } from "react-icons/fi";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
+import Cookies from 'js-cookie';
+import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
-    const { user } = useContext(UserContext);
+    const { user, setUser } = useContext(UserContext);
     // const profileUrl = `${window.location.protocol}//${window.location.host}/profile/${activeQuestion._id}`;
     const [acceptMessages, setAcceptMessages] = useState(true);
     const [messages, setMessages] = useState([]);
@@ -18,14 +20,13 @@ function Dashboard() {
     const [activeQuestion, setActiveQuestion] = useState(null);
     const [showLinkConfirm, setShowLinkConfirm] = useState(false)
     const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+    const navigate = useNavigate();
 
     const fetchMessages = useCallback(async (showLoading = false) => {
         if (showLoading) setIsLoading(true);
         try {
             if (activeQuestion) {
                 const response = await axiosInstance.get(`/dashboard/messages/${activeQuestion._id}`);
-                console.log(response.data.data.messages.messages);
-
                 setMessages(response.data.data.messages.messages);
             }
         } catch (error) {
@@ -37,10 +38,8 @@ function Dashboard() {
 
     const fetchQuestions = useCallback(async () => {
         try {
-
             const response = await axiosInstance.get("/dashboard/fetchAllQuestion");
             setQuestions(response.data.data);
-
         } catch (error) {
             console.log(error.message);
         }
@@ -82,7 +81,6 @@ function Dashboard() {
                 ...prev,
                 isAcceptingMessages: checked,
             }));
-            console.log(updated.data)
             toast.success("Message acceptance status updated");
         } catch (error) {
             console.error("Error updating message acceptance status:", error);

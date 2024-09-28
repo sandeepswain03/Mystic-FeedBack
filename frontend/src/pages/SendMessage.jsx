@@ -1,6 +1,6 @@
 import { useContext, useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import axiosInstance from "../axiosInstance";
+import {axiosInstance} from "../axiosInstance";
 import toast from "react-hot-toast";
 import { FiSend, FiUser } from "react-icons/fi";
 
