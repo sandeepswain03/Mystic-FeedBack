@@ -276,6 +276,35 @@ const fetchAllQuestion = asyncHandler(async (req, res) => {
     }
 });
 
+const deleteQuestion = asyncHandler(async (req, res) => {
+    const { questionId } = req.body;
+
+    try {
+        // Step 1: Find the question by its ID
+        const question = await Question.findById(questionId);
+
+        if (!question) {
+            return res.status(404).json({ message: 'Question not found' });
+        }
+
+        const userId = question.owner; // Assuming 'user' field stores the owner's ID
+
+        // Step 2: Delete all messages associated with this question
+        await Message.deleteMany({ _id: { $in: question.messages } });
+
+        // Step 3: Remove the question ID from the user's 'questions' array
+        await User.findByIdAndUpdate(userId, { $pull: { question: questionId } });
+
+        // Step 4: Delete the question itself
+        await Question.findByIdAndDelete(questionId);
+
+        return res.status(200).json({ message: 'Question and associated Feedbacks deleted successfully' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+});
+
 
 export {
     getMessages,
@@ -287,5 +316,6 @@ export {
     pdfGenerate,
     createQuestion,
     fetchAllQuestion,
+    deleteQuestion
 
 };

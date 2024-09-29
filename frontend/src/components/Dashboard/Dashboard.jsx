@@ -11,7 +11,6 @@ import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
     const { user, setUser } = useContext(UserContext);
-    // const profileUrl = `${window.location.protocol}//${window.location.host}/profile/${activeQuestion._id}`;
     const [acceptMessages, setAcceptMessages] = useState(true);
     const [messages, setMessages] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -20,6 +19,8 @@ function Dashboard() {
     const [activeQuestion, setActiveQuestion] = useState(null);
     const [showLinkConfirm, setShowLinkConfirm] = useState(false)
     const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
+    const [showDeleteQueConfirm, setShowDeleteQueConfirm] = useState(false);
+    const [queIdToDelete, setQueIdToDelete] = useState(null);
     const navigate = useNavigate();
 
     const fetchMessages = useCallback(async (showLoading = false) => {
@@ -132,7 +133,6 @@ function Dashboard() {
     };
 
     const generateLink = async () => {
-
         setShowLinkConfirm(true)
     }
 
@@ -144,6 +144,22 @@ function Dashboard() {
     const handleDeleteMessage = (messageId) => {
         setMessages(messages.filter((message) => message._id !== messageId));
     };
+
+    const handelDeleteQuestion = async () => {
+        try {
+            await axiosInstance.delete("/dashboard/deleteQuestion", {
+                data: {
+                    questionId: queIdToDelete
+                }
+            });
+            setActiveQuestion(null);
+            setQueIdToDelete(null)
+            setShowDeleteQueConfirm(false);
+            toast.success("Question Deleted successfully");
+        } catch (error) {
+            console.error("Error deleting Question:", error);
+        }
+    }
 
     return (
         <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white flex flex-col lg:flex-row">
@@ -158,21 +174,25 @@ function Dashboard() {
                 <h2 className="text-xl lg:text-2xl font-semibold mb-4">Your Questions</h2>
                 <div className="space-y-4">
                     {questions.map((q) => (
-                        <> <div
+                        <div
                             key={q._id}
                             onClick={() => setActiveQuestion(q)}
-                            className={`p-4 rounded-md cursor-pointer ${activeQuestion?._id === q._id ? "bg-blue-600" : "bg-gray-700"
-                                }`}
+                            className={`p-4 rounded-md cursor-pointer ${activeQuestion?._id === q._id ? "bg-blue-600" : "bg-gray-700"}`}
                         >
-                            {q.content || "New Question"}
-                            {/* <button
-                                // onClick={copyToClipboard}
-                                className="bg-blue-500 text-white p-2 lg:p-3 hover:bg-blue-600 transition-colors duration-200"
-                            >
-                                <FiCopy className="h-4 w-4 lg:h-5 lg:w-5" />
-                            </button> */}
+                            <div className="flex justify-between items-center">
+                                <span>{q.content || "New Question"}</span>
+                                <button
+                                    onClick={(e) => {
+                                        // e.stopPropagation(); // Prevents triggering setActiveQuestion when delete button is clicked
+                                        setQueIdToDelete(q._id);// Call the delete handler with the question's ID
+                                        setShowDeleteQueConfirm(true);
+                                    }}
+                                    className="bg-red-500 text-white p-2 hover:bg-red-600 transition-colors duration-200 rounded"
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
-                        </>
                     ))}
                 </div>
             </aside>
@@ -316,6 +336,28 @@ function Dashboard() {
                             </button>
                             <button
                                 onClick={() => setShowDeleteAllConfirm(false)}
+                                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors duration-200 w-full sm:w-auto"
+                            >
+                                Cancel
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showDeleteQueConfirm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full">
+                        <h3 className="text-white text-xl font-semibold mb-4">Confirm Deletion</h3>
+                        <p className="text-gray-300 mb-6">Are you sure you want to delete this Question? This action will delete all the feedbacks of this Question and this action cannot be undone.</p>
+                        <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
+                            <button
+                                onClick={handelDeleteQuestion}
+                                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-200 w-full sm:w-auto"
+                            >
+                                Delete
+                            </button>
+                            <button
+                                onClick={() => setShowDeleteQueConfirm(false)}
                                 className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors duration-200 w-full sm:w-auto"
                             >
                                 Cancel

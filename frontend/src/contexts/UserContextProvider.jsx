@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import UserContext from "./userContext.js";
 import { axiosInstance } from "../axiosInstance.js";
 import { setupAxiosInterceptors } from "../axiosInstance.js";
-import Cookies from 'js-cookie';
 
 export default function UserContextProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -13,11 +12,6 @@ export default function UserContextProvider({ children }) {
 
   const fetchCurrentUser = async () => {
     try {
-      const token = Cookies.get("refreshToken");
-      if (!token) {
-        setIsLoading(false)
-        return;
-      }
       const response = await axiosInstance.get("/user/current-user");
       setUser(response.data.data.user);
     } catch (error) {

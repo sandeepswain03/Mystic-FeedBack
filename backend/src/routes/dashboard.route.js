@@ -9,6 +9,7 @@ import {
     pdfGenerate,
     createQuestion,
     fetchAllQuestion,
+    deleteQuestion
 } from "../controllers/dashboard.controller.js";
 import checkAuth from "../middlewares/auth.middleware.js";
 
@@ -23,6 +24,7 @@ router.route("/question-update").post(checkAuth, questionUpdate);
 router.route("/pdf-generate").get(checkAuth, pdfGenerate);
 router.route("/createQuestion").post(checkAuth, createQuestion);
 router.route("/fetchAllQuestion").get(checkAuth, fetchAllQuestion);
+router.route("/deleteQuestion").delete(checkAuth, deleteQuestion);
 
 
 export default router;
