@@ -1,82 +1,114 @@
 import { useState } from "react";
 import PropTypes from "prop-types";
-import {axiosInstance} from "../axiosInstance";
+import { axiosInstance } from "../axiosInstance";
 import { toast } from "react-hot-toast";
 import dayjs from "dayjs";
-import { FiTrash2, FiClock } from "react-icons/fi";
+import { FiTrash2, FiClock, FiX } from "react-icons/fi";
 
 function MessageCard({ message, questionId, onDelete }) {
-  const [showConfirm, setShowConfirm] = useState(false);
+    const [showConfirm, setShowConfirm] = useState(false);
+    const [showFullMessage, setShowFullMessage] = useState(false);
 
-  const handleDelete = async () => {
-    try {
-      await axiosInstance.delete(`/dashboard/messages/${message._id}`, {
-        data: {
-          questionId: questionId
+    const handleDelete = async () => {
+        try {
+            await axiosInstance.delete(`/dashboard/messages/${message._id}`, {
+                data: {
+                    questionId: questionId
+                }
+            });
+            setShowConfirm(false);
+            onDelete(message._id);
+            toast.success("Message deleted successfully");
+        } catch (error) {
+            console.error("Error deleting message:", error);
+            toast.error("Failed to delete message");
         }
-      });
-      setShowConfirm(false)
-      onDelete(message._id);
-      toast.success("Message deleted successfully");
-    } catch (error) {
-      console.error("Error deleting message:", error);
-      toast.error("Failed to delete message");
-    }
-  };
+    };
 
-  return (
-    <div className="bg-gray-800 shadow-lg rounded-lg p-6 mb-4 transition-all duration-300 hover:shadow-xl relative overflow-hidden">
-      <div className="absolute top-0 right-0 bg-gray-700 px-3 py-1 rounded-bl-lg text-xs text-gray-300 flex items-center">
-        <FiClock className="mr-1" />
-        {dayjs(message.createdAt).format("DD/MM/YYYY HH:mm")}
-      </div>
-      <p className="text-gray-200 mb-6 text-lg leading-relaxed">{message.content}</p>
-      <div className="flex justify-end">
-        <button
-          onClick={() => setShowConfirm(true)}
-          className="text-red-400 hover:text-red-600 transition-colors duration-200 flex items-center"
-          aria-label="Delete message"
-        >
-          <FiTrash2 size={20} className="mr-2" />
-          <span className="text-sm">Delete</span>
-        </button>
-      </div>
+    const truncatedContent =
+        message.content.length > 100
+            ? `${message.content.substring(0, 100)}...`
+            : message.content;
 
-      {showConfirm && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-gray-800 p-6 rounded-lg shadow-xl max-w-sm w-full">
-            <h3 className="text-white text-xl font-semibold mb-4">Confirm Deletion</h3>
-            <p className="text-gray-300 mb-6">Are you sure you want to delete this message? This action cannot be undone.</p>
-            <div className="flex flex-col sm:flex-row justify-end space-y-2 sm:space-y-0 sm:space-x-2">
-              <button
-                onClick={handleDelete}
-                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-200 w-full sm:w-auto"
-              >
-                Yes, Delete
-              </button>
-              <button
-                onClick={() => setShowConfirm(false)}
-                className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700 transition-colors duration-200 w-full sm:w-auto"
-              >
-                Cancel
-              </button>
+    return (
+        <div className="bg-[#3C3B38] shadow-md rounded-lg p-4 mb-4 relative">
+            <div className="text-sm text-[#afa18f] mb-2 flex items-center">
+                <FiClock className="mr-1" />
+                {dayjs(message.createdAt).format("DD/MM/YYYY HH:mm")}
             </div>
-          </div>
+            <p
+                className="text-[#f0f0f0] mb-3 cursor-pointer"
+                onClick={() => setShowFullMessage(true)}
+            >
+                {truncatedContent}
+            </p>
+            <button
+                onClick={() => setShowConfirm(true)}
+                className="bg-gradient-to-r from-[#ec4e39] to-[#d43d2a] text-white px-3 py-1 rounded text-sm hover:shadow-lg transition-all duration-200"
+                aria-label="Delete message"
+            >
+                <FiTrash2 className="inline mr-1" /> Delete
+            </button>
+
+            {showConfirm && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-[#2C2B28] p-6 rounded-lg shadow-xl max-w-sm w-full">
+                        <h3 className="text-[#ec4e39] text-lg font-semibold mb-3">
+                            Confirm Deletion
+                        </h3>
+                        <p className="text-[#afa18f] mb-4">
+                            Are you sure you want to delete this message? This
+                            action cannot be undone.
+                        </p>
+                        <div className="flex justify-end space-x-3">
+                            <button
+                                onClick={() => setShowConfirm(false)}
+                                className="bg-[#3C3B38] text-[#afa18f] px-4 py-2 rounded hover:bg-[#4C4B48] transition-colors duration-200"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleDelete}
+                                className="bg-gradient-to-r from-[#ec4e39] to-[#d43d2a] text-white px-4 py-2 rounded transition-all duration-200 hover:shadow-lg"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {showFullMessage && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                    <div className="bg-[#2C2B28] p-6 rounded-lg shadow-xl max-w-2xl w-full relative">
+                        <button
+                            onClick={() => setShowFullMessage(false)}
+                            className="absolute top-2 right-2 text-[#afa18f] hover:text-[#ec4e39] transition-colors duration-200"
+                            aria-label="Close full message"
+                        >
+                            <FiX size={24} />
+                        </button>
+                        <h3 className="text-[#ec4e39] text-lg font-semibold mb-3">
+                            Full Message
+                        </h3>
+                        <p className="text-[#f0f0f0] mb-4 whitespace-pre-wrap">
+                            {message.content}
+                        </p>
+                    </div>
+                </div>
+            )}
         </div>
-      )}
-    </div>
-  );
+    );
 }
 
 MessageCard.propTypes = {
-  message: PropTypes.shape({
-    _id: PropTypes.string.isRequired,
-    content: PropTypes.string.isRequired,
-    createdAt: PropTypes.string.isRequired,
-  }).isRequired,
-  questionId: PropTypes.string.isRequired,
-
-  onDelete: PropTypes.func.isRequired,
+    message: PropTypes.shape({
+        _id: PropTypes.string.isRequired,
+        content: PropTypes.string.isRequired,
+        createdAt: PropTypes.string.isRequired
+    }).isRequired,
+    questionId: PropTypes.string.isRequired,
+    onDelete: PropTypes.func.isRequired
 };
 
 export default MessageCard;

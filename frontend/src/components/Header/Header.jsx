@@ -1,14 +1,40 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaBars, FaTimes } from "react-icons/fa";
+import { FaSun, FaCloudSun, FaMoon, FaRegMoon } from "react-icons/fa";
 import UserContext from "../../contexts/userContext";
-import {axiosInstance} from "../../axiosInstance";
+import { axiosInstance } from "../../axiosInstance";
 import toast from "react-hot-toast";
 
 function Header() {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const { user, setUser } = useContext(UserContext);
     const navigate = useNavigate();
+    const [greeting, setGreeting] = useState("");
+    const [greetingIcon, setGreetingIcon] = useState(null);
+
+    useEffect(() => {
+        const getGreetingAndIcon = () => {
+            const currentHour = new Date().getHours();
+            if (currentHour >= 5 && currentHour < 12) {
+                setGreetingIcon(<FaSun className="text-yellow-400 mr-2" />);
+                return "Good Morning";
+            } else if (currentHour >= 12 && currentHour < 17) {
+                setGreetingIcon(
+                    <FaCloudSun className="text-orange-400 mr-2" />
+                );
+                return "Good Afternoon";
+            } else if (currentHour >= 17 && currentHour < 22) {
+                setGreetingIcon(<FaRegMoon className="text-blue-300 mr-2" />);
+                return "Good Evening";
+            } else {
+                setGreetingIcon(<FaMoon className="text-indigo-300 mr-2" />);
+                return "Happy Late Night";
+            }
+        };
+
+        setGreeting(getGreetingAndIcon());
+    }, []);
 
     const handleLogout = async () => {
         try {
@@ -33,8 +59,9 @@ function Header() {
 
                 <div className="hidden md:flex items-center justify-center flex-grow">
                     {user && (
-                        <span className="text-lg font-semibold text-[#afa18f]">
-                            Welcome, {user.username}
+                        <span className="text-lg font-semibold text-white flex items-center">
+                            {greetingIcon}
+                            {greeting}, {user.username}
                         </span>
                     )}
                 </div>

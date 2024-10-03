@@ -28,3 +28,14 @@ html {
 ::-webkit-scrollbar-thumb {
     background: #ff0000;
 }
+
+/* Custom text selection */
+::selection {
+    background-color: #ec4e39;
+    color: #262622;
+}
+
+::-moz-selection {
+    background-color: #ec4e39;
+    color: #262622;
+}
