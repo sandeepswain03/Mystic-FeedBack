@@ -11,7 +11,11 @@ import { motion } from "framer-motion";
 
 function Login() {
     // Initialize form handling using react-hook-form
-    const { register, handleSubmit, formState: { errors } } = useForm();
+    const {
+        register,
+        handleSubmit,
+        formState: { errors }
+    } = useForm();
     const [showPassword, setShowPassword] = useState(false);
     const navigate = useNavigate();
     const { setUser } = useContext(UserContext);
@@ -28,12 +32,13 @@ function Login() {
                 setUser(user);
                 toast.success("Logged in successfully!");
                 navigate("/dashboard");
-            }
-            else{
-                throw new Error("Unexpected response status"); 
+            } else {
+                throw new Error("Unexpected response status");
             }
         } catch (error) {
-            const errorMessage = error.response?.data?.message || "Something went wrong. Please try again.";
+            const errorMessage =
+                error.response?.data?.message ||
+                "Something went wrong. Please try again.";
             toast.error(errorMessage);
         }
     };
@@ -66,7 +71,10 @@ function Login() {
                         Sign in to your account
                     </p>
                 </div>
-                <form className="mt-8 space-y-6" onSubmit={handleSubmit(onSubmit)}>
+                <form
+                    className="mt-8 space-y-6"
+                    onSubmit={handleSubmit(onSubmit)}
+                >
                     <div className="rounded-md shadow-sm -space-y-px">
                         {/* Email/Username Input */}
                         <div className="mb-6">
@@ -80,7 +88,8 @@ function Login() {
                                     type="text"
                                     autoComplete="email"
                                     {...register("email", {
-                                        required: "Email or username is required" // Validation message
+                                        required:
+                                            "Email or username is required" // Validation message
                                     })}
                                     className="appearance-none rounded-lg relative block w-full px-4 py-3 border border-[#393937] placeholder-[#afa18f] text-[#afa18f] bg-[#2C2B28] focus:outline-none focus:ring-2 focus:ring-[#ec4e39] focus:border-[#ec4e39] focus:z-10 sm:text-sm transition duration-300"
                                     placeholder="Email address or Username"
@@ -88,7 +97,8 @@ function Login() {
                             </div>
                             {errors.email && (
                                 <p className="mt-2 text-sm text-[#ec4e39]">
-                                    {errors.email.message} {/* Show validation error message */}
+                                    {errors.email.message}{" "}
+                                    {/* Show validation error message */}
                                 </p>
                             )}
                         </div>
@@ -113,7 +123,9 @@ function Login() {
                                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center">
                                     <button
                                         type="button"
-                                        onClick={() => setShowPassword(!showPassword)} // Toggle function
+                                        onClick={() =>
+                                            setShowPassword(!showPassword)
+                                        } // Toggle function
                                         className="text-[#afa18f] focus:outline-none hover:text-[#ec4e39] transition duration-300"
                                     >
                                         {showPassword ? (
@@ -126,7 +138,8 @@ function Login() {
                             </div>
                             {errors.password && (
                                 <p className="mt-2 text-sm text-[#ec4e39]">
-                                    {errors.password.message} {/* Show validation error message */}
+                                    {errors.password.message}{" "}
+                                    {/* Show validation error message */}
                                 </p>
                             )}
                         </div>

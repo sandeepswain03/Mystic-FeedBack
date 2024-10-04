@@ -37,8 +37,8 @@ function Home() {
     }, []);
 
     return (
-        <div className="h-screen overflow-hidden bg-[#2C2B28]">
-            <main className="h-full relative">
+        <div className="h-[91.5vh] overflow-hidden bg-[#2C2B28]">
+            <main className="h-screen relative">
                 <motion.div
                     className="absolute inset-0 bg-[#ec4e39] hidden md:block"
                     animate={{

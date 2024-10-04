@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaBars, FaTimes } from "react-icons/fa";
-import { FaSun, FaCloudSun, FaMoon, FaRegMoon } from "react-icons/fa";
+import { FaSun, FaCloudSun, FaMoon, FaRegMoon, FaEnvelope } from "react-icons/fa";
 import UserContext from "../../contexts/userContext";
 import { axiosInstance } from "../../axiosInstance";
 import toast from "react-hot-toast";
@@ -50,9 +50,12 @@ function Header() {
 
     return (
         <header className="bg-[#2C2B28] text-[#afa18f] shadow-lg">
-            <div className="container mx-auto px-4 py-6 flex justify-between items-center">
+            <div className="container mx-auto px-3 py-3 flex justify-between items-center">
                 <div className="flex items-center">
-                    <Link to="/" className="text-2xl font-bold text-[#ec4e39]">
+                    <Link to="/" className="flex items-center text-2xl font-bold text-[#ec4e39]">
+                        <div className="w-8 h-8 bg-[#ec4e39] rounded-full flex items-center justify-center mr-2">
+                            <FaEnvelope className="text-[#262622] text-xl" />
+                        </div>
                         Mystic Feedback
                     </Link>
                 </div>
