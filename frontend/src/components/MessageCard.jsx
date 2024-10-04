@@ -26,8 +26,8 @@ function MessageCard({ message, questionId, onDelete }) {
     };
 
     const truncatedContent =
-        message.content.length > 100
-            ? `${message.content.substring(0, 100)}...`
+        message.content.length > 30
+            ? `${message.content.substring(0, 30)}...`
             : message.content;
 
     return (
@@ -80,7 +80,7 @@ function MessageCard({ message, questionId, onDelete }) {
 
             {showFullMessage && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-[#2C2B28] p-6 rounded-lg shadow-xl max-w-2xl w-full relative">
+                    <div className="bg-[#2C2B28] p-6 rounded-lg shadow-xl max-w-2xl w-full relative overflow-y-auto max-h-[80vh]">
                         <button
                             onClick={() => setShowFullMessage(false)}
                             className="absolute top-2 right-2 text-[#afa18f] hover:text-[#ec4e39] transition-colors duration-200"
@@ -91,11 +91,12 @@ function MessageCard({ message, questionId, onDelete }) {
                         <h3 className="text-[#ec4e39] text-lg font-semibold mb-3">
                             Full Message
                         </h3>
-                        <p className="text-[#f0f0f0] mb-4 whitespace-pre-wrap">
+                        <p className="text-[#f0f0f0] mb-4 whitespace-pre-wrap break-words">
                             {message.content}
                         </p>
                     </div>
                 </div>
+
             )}
         </div>
     );

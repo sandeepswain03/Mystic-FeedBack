@@ -201,9 +201,8 @@ function Dashboard() {
         <div className="min-h-screen bg-gradient-to-br from-[#1a1a1a] to-[#2d2d2d] text-[#f0f0f0] flex">
             {/* Sidebar */}
             <aside
-                className={`${
-                    sidebarOpen ? "w-64" : "w-16"
-                } transition-all duration-300 ease-in-out bg-[#2C2B28] p-4 flex flex-col shadow-lg h-screen`}
+                className={`${sidebarOpen ? "w-64" : "w-16"
+                    } transition-all duration-300 ease-in-out bg-[#2C2B28] p-4 flex flex-col shadow-lg h-screen`}
             >
                 <button
                     onClick={toggleSidebar}
@@ -228,11 +227,10 @@ function Dashboard() {
                             <div
                                 key={q._id}
                                 onClick={() => setActiveQuestion(q)}
-                                className={`p-4 rounded-lg cursor-pointer transition-all duration-200 ${
-                                    activeQuestion?._id === q._id
-                                        ? "bg-gradient-to-r from-[#ec4e39] to-[#d43d2a] text-white shadow-md"
-                                        : "bg-[#3C3B38] hover:bg-[#4C4B48]"
-                                }`}
+                                className={`p-4 rounded-lg cursor-pointer transition-all duration-200 ${activeQuestion?._id === q._id
+                                    ? "bg-gradient-to-r from-[#ec4e39] to-[#d43d2a] text-white shadow-md"
+                                    : "bg-[#3C3B38] hover:bg-[#4C4B48]"
+                                    }`}
                             >
                                 <div className="flex justify-between items-center">
                                     <span className="font-medium truncate max-w-[80%]">
@@ -242,15 +240,13 @@ function Dashboard() {
                                     </span>
                                     <button
                                         onClick={(e) => {
-                                            e.stopPropagation();
                                             setQueIdToDelete(q._id);
                                             setShowDeleteQueConfirm(true);
                                         }}
-                                        className={`transition-colors duration-200 ml-2 ${
-                                            activeQuestion?._id === q._id
-                                                ? "text-white hover:text-[#262622]"
-                                                : "text-[#ec4e39] hover:text-[#d43d2a]"
-                                        }`}
+                                        className={`transition-colors duration-200 ml-2 ${activeQuestion?._id === q._id
+                                            ? "text-white hover:text-[#262622]"
+                                            : "text-[#ec4e39] hover:text-[#d43d2a]"
+                                            }`}
                                     >
                                         <FiTrash2 size={18} />
                                     </button>
@@ -266,118 +262,139 @@ function Dashboard() {
                 <h1 className="text-4xl font-bold p-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-[#ec4e39] to-[#afa18f]">
                     Dashboard
                 </h1>
-                <section className="flex-1 flex flex-col p-6 lg:p-10 overflow-y-auto custom-scrollbar">
-                    {/* Input Bar for Adding Questions */}
-                    <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-8">
-                        <input
-                            type="text"
-                            value={questionInput}
-                            onChange={(e) => setQuestionInput(e.target.value)}
-                            className="flex-1 p-3 rounded-lg bg-[#3C3B38] text-[#f0f0f0] border border-[#4C4B48] focus:outline-none focus:border-[#ec4e39] transition-colors duration-200"
-                            placeholder={
-                                activeQuestion
-                                    ? activeQuestion.content
-                                    : "Enter your Question"
-                            }
-                        />
-                        {!activeQuestion ? (
+                {!activeQuestion && (
+                    <section className="flex-1 flex flex-col p-6 lg:p-10 overflow-y-auto custom-scrollbar">
+                        {/* Input Bar for Adding Questions */}
+                        <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-8">
+                            <input
+                                type="text"
+                                value={questionInput}
+                                onChange={(e) => setQuestionInput(e.target.value)}
+                                className="flex-1 p-3 rounded-lg bg-[#3C3B38] text-[#f0f0f0] border border-[#4C4B48] focus:outline-none focus:border-[#ec4e39] transition-colors duration-200"
+                                placeholder={
+                                    activeQuestion
+                                        ? activeQuestion.content
+                                        : "Enter your Question"
+                                }
+                            />
                             <button
                                 onClick={handleSaveQuestion}
                                 className="w-full md:w-auto bg-gradient-to-r from-[#ec4e39] to-[#d43d2a] text-white px-6 py-3 rounded-lg shadow-md hover:shadow-lg transition-all duration-200"
                             >
                                 Save Question
                             </button>
-                        ) : (
+                        </div>
+
+                    </section>
+                )}
+                {activeQuestion && (
+                    <section className="flex-1 flex flex-col p-6 lg:p-10 overflow-y-auto custom-scrollbar">
+                        {/* Input Bar for Adding Questions */}
+                        <div className="flex flex-col md:flex-row items-center space-y-4 md:space-y-0 md:space-x-4 mb-8">
+                            <input
+                                type="text"
+                                value={questionInput}
+                                onChange={(e) => setQuestionInput(e.target.value)}
+                                className="flex-1 p-3 rounded-lg bg-[#3C3B38] text-[#f0f0f0] border border-[#4C4B48] focus:outline-none focus:border-[#ec4e39] transition-colors duration-200"
+                                placeholder={
+                                    activeQuestion
+                                        ? activeQuestion.content
+                                        : "Enter your Question"
+                                }
+                                readOnly
+                            />
                             <button
                                 className="w-full md:w-auto bg-[#3C3B38] text-[#f0f0f0] px-6 py-3 rounded-lg hover:bg-[#4C4B48] transition-colors duration-200 flex items-center justify-center"
                                 onClick={generateLink}
                             >
                                 <FiLink className="mr-2" /> Generate Link
                             </button>
-                        )}
-                    </div>
 
-                    {/* Toggle Accept Messages and Delete All Button */}
-                    <div className="flex flex-wrap items-center justify-between space-y-4 md:space-y-0 mb-8">
-                        <div className="flex items-center space-x-4">
-                            <h2 className="text-xl lg:text-2xl font-semibold">
-                                Accept Feedback
-                            </h2>
-                            <Switch
-                                onChange={handleSwitchChange}
-                                checked={
-                                    activeQuestion
-                                        ? activeQuestion.isAcceptingMessages
-                                        : true
-                                }
-                                onColor="#ec4e39"
-                                offColor="#3C3B38"
-                                onHandleColor="#ffffff"
-                                offHandleColor="#afa18f"
-                                handleDiameter={24}
-                                uncheckedIcon={false}
-                                checkedIcon={false}
-                                boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
-                                activeBoxShadow="0px 0px 1px 10px rgba(236, 78, 57, 0.2)"
-                                height={32}
-                                width={56}
-                                className="react-switch"
-                                id="acceptMessages"
-                            />
                         </div>
-                        <div className="flex flex-wrap items-center space-x-0 sm:space-x-4 space-y-4 sm:space-y-0">
-                            <button
-                                className="bg-gradient-to-r from-[#d43d2a] to-[#ec4e39] text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center w-full sm:w-auto"
-                                onClick={() => setShowDeleteAllConfirm(true)}
-                            >
-                                <FiTrash2 className="mr-2" /> Delete All
-                                Messages
-                            </button>
-                            <button
-                                className="bg-gradient-to-r from-[#ec4e39] to-[#d43d2a] text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center w-full sm:w-auto"
-                                onClick={downloadMessages}
-                            >
-                                <FiCopy className="mr-2" /> Export Messages
-                            </button>
-                            <button
-                                className="bg-[#3C3B38] text-[#f0f0f0] px-4 py-2 rounded-lg hover:bg-[#4C4B48] transition-colors duration-200 flex items-center w-full sm:w-auto"
-                                onClick={refreshMessages}
-                                disabled={isLoading}
-                            >
-                                {isLoading ? (
-                                    <AiOutlineLoading3Quarters className="animate-spin mr-2" />
-                                ) : (
-                                    <FiRefreshCw className="mr-2" />
-                                )}
-                                Refresh
-                            </button>
-                        </div>
-                    </div>
 
-                    {/* Display Messages */}
-                    <div className="flex-1">
-                        {messages.length > 0 ? (
-                            <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-                                {messages.map((message) => (
-                                    <MessageCard
-                                        key={message._id}
-                                        questionId={
-                                            activeQuestion
-                                                ? activeQuestion._id
-                                                : ""
-                                        }
-                                        message={message}
-                                        onDelete={handleDeleteMessage}
-                                    />
-                                ))}
+                        {/* Toggle Accept Messages and Delete All Button */}
+                        <div className="flex flex-wrap items-center justify-between space-y-4 md:space-y-0 mb-8">
+                            <div className="flex items-center space-x-4">
+                                <h2 className="text-xl lg:text-2xl font-semibold">
+                                    Accept Feedback
+                                </h2>
+                                <Switch
+                                    onChange={handleSwitchChange}
+                                    checked={
+                                        activeQuestion
+                                            ? activeQuestion.isAcceptingMessages
+                                            : true
+                                    }
+                                    onColor="#ec4e39"
+                                    offColor="#3C3B38"
+                                    onHandleColor="#ffffff"
+                                    offHandleColor="#afa18f"
+                                    handleDiameter={24}
+                                    uncheckedIcon={false}
+                                    checkedIcon={false}
+                                    boxShadow="0px 1px 5px rgba(0, 0, 0, 0.6)"
+                                    activeBoxShadow="0px 0px 1px 10px rgba(236, 78, 57, 0.2)"
+                                    height={32}
+                                    width={56}
+                                    className="react-switch"
+                                    id="acceptMessages"
+                                />
                             </div>
-                        ) : (
-                            <p className="text-[#afa18f] text-center text-lg">
-                                No messages yet.
-                            </p>
-                        )}
-                    </div>
-                </section>
+                            <div className="flex flex-wrap items-center space-x-0 sm:space-x-4 space-y-4 sm:space-y-0">
+                                <button
+                                    className="bg-gradient-to-r from-[#d43d2a] to-[#ec4e39] text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center w-full sm:w-auto"
+                                    onClick={() => setShowDeleteAllConfirm(true)}
+                                >
+                                    <FiTrash2 className="mr-2" /> Delete All
+                                    Messages
+                                </button>
+                                <button
+                                    className="bg-gradient-to-r from-[#ec4e39] to-[#d43d2a] text-white px-4 py-2 rounded-lg shadow-md hover:shadow-lg transition-all duration-200 flex items-center w-full sm:w-auto"
+                                    onClick={downloadMessages}
+                                >
+                                    <FiCopy className="mr-2" /> Export Messages
+                                </button>
+                                <button
+                                    className="bg-[#3C3B38] text-[#f0f0f0] px-4 py-2 rounded-lg hover:bg-[#4C4B48] transition-colors duration-200 flex items-center w-full sm:w-auto"
+                                    onClick={refreshMessages}
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? (
+                                        <AiOutlineLoading3Quarters className="animate-spin mr-2" />
+                                    ) : (
+                                        <FiRefreshCw className="mr-2" />
+                                    )}
+                                    Refresh
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* Display Messages */}
+                        <div className="flex-1">
+                            {messages.length > 0 ? (
+                                <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+                                    {messages.map((message) => (
+                                        <MessageCard
+                                            key={message._id}
+                                            questionId={
+                                                activeQuestion
+                                                    ? activeQuestion._id
+                                                    : ""
+                                            }
+                                            message={message}
+                                            onDelete={handleDeleteMessage}
+                                        />
+                                    ))}
+                                </div>
+                            ) : (
+                                <p className="text-[#afa18f] text-center text-lg">
+                                    No messages yet.
+                                </p>
+                            )}
+                        </div>
+                    </section>
+                )}
+
             </main>
 
             {/* Modals */}
