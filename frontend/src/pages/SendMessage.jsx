@@ -1,10 +1,9 @@
-import { useState, useEffect, useContext } from "react";
-import { useParams, Link, useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { axiosInstance } from "../axiosInstance";
 import toast from "react-hot-toast";
 import { FiSend, FiUser, FiMessageSquare } from "react-icons/fi";
-import UserContext from "../contexts/userContext.js";
 import useMousePosition from "../utils/useMousePostion.js";
 import mask from "../../public/mask.svg";
 import { motion } from "framer-motion";
@@ -21,7 +20,6 @@ function SendMessage() {
     const [question, setQuestion] = useState("");
     const [userName, setUserName] = useState("");
     const [acceptanceStatus, setAcceptanceStatus] = useState(true);
-    const navigate = useNavigate();
     const { x, y } = useMousePosition();
     const size = 40;
 
@@ -35,6 +33,8 @@ function SendMessage() {
                 });
                 toast.success("Message sent successfully");
                 setIsMessageSent(true);
+                // Store in localStorage that message was sent for this questionId
+                localStorage.setItem(`message_sent_${questionId}`, 'true');
             } else {
                 toast.error("User is not accepting messages");
             }
@@ -48,6 +48,13 @@ function SendMessage() {
 
     const getQuestionAndUsername = async () => {
         try {
+            // Check if message was already sent
+            const messageSent = localStorage.getItem(`message_sent_${questionId}`);
+            if (messageSent) {
+                setIsMessageSent(true);
+                return;
+            }
+
             const questionResponse = await axiosInstance.get(
                 "/feedback/getQuestion",
                 {
@@ -76,7 +83,7 @@ function SendMessage() {
 
     useEffect(() => {
         getQuestionAndUsername();
-    }, [questionId]);
+    }, [questionId, isMessageSent]);
 
     if (isMessageSent) {
         return (

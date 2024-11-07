@@ -1,5 +1,4 @@
-import { useContext, useEffect, useState, useCallback } from "react";
-import UserContext from "../../contexts/userContext";
+import { useEffect, useState, useCallback } from "react";
 import { toast } from "react-hot-toast";
 import { axiosInstance } from "../../axiosInstance";
 import Switch from "react-switch";
@@ -20,11 +19,8 @@ import {
     FaExclamationTriangle
 } from "react-icons/fa";
 import { AiOutlineLoading3Quarters } from "react-icons/ai";
-import Cookies from "js-cookie";
-import { useNavigate } from "react-router-dom";
 
 function Dashboard() {
-    const { user, setUser } = useContext(UserContext);
     const [acceptMessages, setAcceptMessages] = useState(true);
     const [messages, setMessages] = useState([]);
     const [isLoading, setIsLoading] = useState(false);
@@ -35,7 +31,6 @@ function Dashboard() {
     const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
     const [showDeleteQueConfirm, setShowDeleteQueConfirm] = useState(false);
     const [queIdToDelete, setQueIdToDelete] = useState(null);
-    const navigate = useNavigate();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
     const toggleSidebar = () => {
@@ -151,7 +146,7 @@ function Dashboard() {
             console.error("Error downloading the PDF:", error);
         }
     };
-
+    
     const refreshMessages = () => {
         fetchMessages(true);
     };
