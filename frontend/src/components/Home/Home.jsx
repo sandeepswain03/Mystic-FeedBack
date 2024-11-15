@@ -42,7 +42,9 @@ function Home() {
                 <motion.div
                     className="absolute inset-0 bg-[#ec4e39] hidden md:block"
                     animate={{
-                        WebkitMaskPosition: `${x - size / 2}px ${y - size / 2}px`,
+                        WebkitMaskPosition: isHovered
+                            ? `${x - size + 175}px ${y - size + 100}px`
+                            : `${x - size / 3}px ${y - size -30}px`,
                         WebkitMaskSize: `${size}px`
                     }}
                     transition={{

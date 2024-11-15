@@ -49,7 +49,7 @@ function Signup() {
             <motion.div
                 className="absolute inset-0 bg-[#ec4e39] z-0 hidden md:block"
                 animate={{
-                    WebkitMaskPosition: `${x - size / 2}px ${y - size / 2}px`,
+                    WebkitMaskPosition: `${x - size / 3}px ${y - size - 30}px`,
                     WebkitMaskSize: `${size}px`
                 }}
                 transition={{
