@@ -8,7 +8,7 @@
     "start": "node src/index.js",
     "build": "echo \"No build step required for JavaScript project\"",
     "watch": "echo \"No watch step required for JavaScript project\"",
-    "dev": "nodemon index.js",
+    "dev": "nodemon src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
