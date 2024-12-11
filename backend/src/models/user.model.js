@@ -36,7 +36,11 @@ const userSchema = new Schema({
             type: Schema.Types.ObjectId,
             ref: "Question"
         }
-    ]
+    ],
+    verified: {
+        type: Boolean,
+        default: false
+    }
 }, { timestamps: true });
 
 userSchema.pre("save", async function (next) {

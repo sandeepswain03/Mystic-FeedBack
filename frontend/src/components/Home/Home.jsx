@@ -43,8 +43,8 @@ function Home() {
                     className="absolute inset-0 bg-[#ec4e39] hidden md:block"
                     animate={{
                         WebkitMaskPosition: isHovered
-                            ? `${x - size + 175}px ${y - size + 100}px`
-                            : `${x - size / 3}px ${y - size -30}px`,
+                            ? `${x - size + 175}px ${y - size + 115}px`
+                            : `${(x - size / 3)-3}px ${y - size - 37}px`,
                         WebkitMaskSize: `${size}px`
                     }}
                     transition={{

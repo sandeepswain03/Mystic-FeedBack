@@ -2,6 +2,7 @@ import apiError from "../utils/apiError.js";
 import asyncHandler from "../utils/asyncHandler.js";
 import apiResponse from "../utils/apiResponse.js";
 import { User } from "../models/user.model.js";
+import nodeMailer from "nodemailer"
 
 // Generate Access and Refresh Tokens
 const generateAccessAndRefreshToken = async (userId) => {
@@ -18,10 +19,20 @@ const generateAccessAndRefreshToken = async (userId) => {
         throw new apiError(500, "Error generating tokens");
     }
 };
+// Generate random otp
+const generateotp = () => {
+    const characters = '0123456789';
+    let otp = '';
+    for (let i = 0; i < 6; i++) {
+        const randomIndex = Math.floor(Math.random() * characters.length);
+        otp += characters[randomIndex];
+    }
+    return otp;
+}
 
 // Register User
 const registerUser = asyncHandler(async (req, res) => {
-    const { username, email, password } = req.body;
+    const { username, email, password, isVerified } = req.body;
 
     if ([username, email, password].some((field) => !field?.trim())) {
         throw new apiError(400, "All fields are required");
@@ -33,7 +44,8 @@ const registerUser = asyncHandler(async (req, res) => {
     const user = await User.create({
         username: username.toLowerCase(),
         email,
-        password
+        password,
+        verified: isVerified
     });
 
     const createdUser = await User.findById(user._id).select(
@@ -99,9 +111,49 @@ const getCurrentUser = asyncHandler(async (req, res) => {
         .json(new apiResponse(200, { user: req.user }, "User fetched successfully"));
 });
 
+// Send OTP
+const sendOtp = asyncHandler(async (req, res) => {
+    const email = req.query.email;
+
+    const transporter = nodeMailer.createTransport({
+        service: 'gmail',
+        auth: {
+            user: "yellow06jacket@gmail.com",
+            pass: "utnk wfpt hlfq hqae",
+        },
+    });
+    const otp = generateotp();
+    const info = await transporter.sendMail({
+        from: '"Mystic Feedback 👻" <mysticfeedback@gmail.com>', // Sender address
+        to: `${email}`, // List of receivers
+        subject: "OTP for Registration", // Subject line
+        text: `Dear User,
+        
+    This is your one-time password (OTP): ${otp}.
+    Please do not share the OTP with others.
+    
+    Regards,
+    Team Mystic Feedback`, // Plain text body
+
+        html: `<p>Dear User,</p>
+    <p>This is your one-time password (OTP): <b>${otp}</b>.</p>
+    <p>Please do not share the OTP with others.</p>
+    <p>Regards,</p>
+    <p><b>Team Mystic Feedback</b></p>`, // HTML body
+    });
+
+
+    return res
+        .status(200)
+        .json(new apiResponse(200, { info, otp }, "Otp Sent successfully"));
+
+
+});
+
 export {
     registerUser,
     loginUser,
     logoutUser,
-    getCurrentUser
+    getCurrentUser,
+    sendOtp
 };
