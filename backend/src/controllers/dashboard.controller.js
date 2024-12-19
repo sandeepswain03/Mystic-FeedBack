@@ -227,7 +227,6 @@ const pdfGenerate = asyncHandler(async (req, res) => {
 const createQuestion = asyncHandler(async (req, res) => {
     try {
         const { question } = req.body;
-        console.log(question);
 
         const createdQuestion = await Question.create({
             owner: req.user._id,

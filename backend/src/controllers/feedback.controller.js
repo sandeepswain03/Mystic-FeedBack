@@ -25,7 +25,6 @@ const getQuestion = asyncHandler(async (req, res) => {
 const getUserName = asyncHandler(async (req, res) => {
     try {
         const { Id } = req.query
-        console.log(Id);
 
         const user = await User.findById(Id).select("username");
         const userName = user.username;

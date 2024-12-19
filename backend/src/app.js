@@ -7,7 +7,10 @@ import cookieParser from "cookie-parser";
 import apiError from "./utils/apiError.js";
 const app = express();
 app.use(
-    cors()
+    cors({
+        origin: "http://localhost:5173",
+        credentials: true
+    })
 );
 const morganFormat = ":method :url :status :response-time ms";
 app.use(
@@ -41,12 +44,12 @@ app.use(cookieParser());
 //import routes
 import userRoute from "./routes/user.route.js";
 import dashboardRoute from "./routes/dashboard.route.js";
-import feedbackRoute from "./routes/feedback.route.js"
+import feedbackRoute from "./routes/feedback.route.js";
 
 //routes
 app.use("/api/v1/user", userRoute);
 app.use("/api/v1/dashboard", dashboardRoute);
-app.use("/api/v1/feedback", feedbackRoute)
+app.use("/api/v1/feedback", feedbackRoute);
 
 app.use((err, req, res, next) => {
     // Check if it's an instance of your custom ApiError
@@ -61,7 +64,7 @@ app.use((err, req, res, next) => {
     console.error(err.stack); // Log the error stack for debugging
     return res.status(500).json({
         status: "error",
-        message: "Internal Server Error",
+        message: "Internal Server Error"
     });
 });
 
